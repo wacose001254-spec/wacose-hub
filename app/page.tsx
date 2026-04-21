@@ -13,7 +13,7 @@ export default function Home() {
       {/* 1. Cinematic Photo Background & Overlay */}
       <div className="absolute inset-0 z-0">
         <Image 
-          src="/your-photo.jpg" // ⚠️ Place your photo in the 'public' folder and rename this path
+          src="/hero.jpg" // ⚠️ Place your photo in the 'public' folder and rename this path
           alt="Wacose OS Hero Background"
           fill
           priority
