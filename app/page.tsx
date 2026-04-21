@@ -102,9 +102,11 @@ export default function LandingPage() {
               <ArrowRight className="group-hover:translate-x-2 transition-transform" />
             </Link>
             
+            <link href="/vision">
             <button className="px-10 py-5 border border-white/20 rounded-full font-bold uppercase tracking-widest hover:bg-white/10 transition">
               View Vision 2026
             </button>
+            </link>
           </motion.div>
         </motion.div>
 
