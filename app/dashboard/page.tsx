@@ -12,8 +12,9 @@ import MealSlider from '@/components/MealSlider';
 import QuickEntry from '@/components/QuickEntry'; 
 import WealthAuditor from '@/components/WealthAuditor';
 import PhotoVault from '@/components/PhotoVault';
+import LiveTicker from '@/components/LiveTicker'; // The New Live Stream Bar
 
-// Icons - Using 'Activity' instead of 'Gauge' to ensure visibility
+// Icons
 import { BarChart3, LayoutDashboard, ArrowUpCircle, ArrowDownCircle, Activity } from 'lucide-react';
 
 export default function Dashboard() {
@@ -62,12 +63,12 @@ export default function Dashboard() {
       .from('finances')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(3);
+      .limit(10); // Increased limit for a better ticker stream
     if (logs) setRecentLogs(logs);
   };
 
   return (
-    <main className="min-h-screen bg-black text-white p-6 font-sans">
+    <main className="min-h-screen bg-black text-white p-6 pb-24 font-sans">
       
       {/* 1. NAVIGATION HUB */}
       <nav className="max-w-7xl mx-auto flex justify-between items-center mb-12">
@@ -80,9 +81,8 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* 2. TOP SUMMARY STATS (The "Dashboard Gearbox") */}
+      {/* 2. TOP SUMMARY STATS */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {/* Inflow Card */}
         <div className="p-8 rounded-[2.5rem] bg-zinc-900/40 border border-green-500/10 flex justify-between items-center">
           <div>
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">Today's Inflow</p>
@@ -93,7 +93,6 @@ export default function Dashboard() {
           <ArrowUpCircle size={32} className="text-green-500/20" />
         </div>
 
-        {/* Outflow Card */}
         <div className="p-8 rounded-[2.5rem] bg-zinc-900/40 border border-red-500/10 flex justify-between items-center">
           <div>
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">Today's Outflow</p>
@@ -104,7 +103,6 @@ export default function Dashboard() {
           <ArrowDownCircle size={32} className="text-red-500/20" />
         </div>
 
-        {/* THE GAUGE CARD (Efficiency) */}
         <div className="p-8 rounded-[2.5rem] bg-zinc-900/40 border border-blue-500/20 flex justify-between items-center relative overflow-hidden">
           <div className="relative z-10">
             <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-1">Fuel Efficiency</p>
@@ -113,8 +111,6 @@ export default function Dashboard() {
             </h2>
           </div>
           <Activity size={32} className="text-blue-500/20 relative z-10" />
-          
-          {/* Progress bar visualizer at the bottom */}
           <div className="absolute bottom-0 left-0 w-full h-1 bg-zinc-800">
              <div 
                className="h-full bg-blue-500 transition-all duration-1000" 
@@ -127,10 +123,9 @@ export default function Dashboard() {
       {/* 3. CORE OPERATING MODULES (Bento Grid) */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
         
-        {/* LEFT COLUMN: Finance & Wealth Audit */}
+        {/* LEFT COLUMN */}
         <div className="space-y-8">
           <FinancialLog />
-          <WealthAuditor />
           <div className="p-8 rounded-[2.5rem] bg-zinc-900/50 border border-white/5 backdrop-blur-sm">
             <div className="flex justify-between mb-4">
               <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Land Goal (500K)</p>
@@ -143,22 +138,23 @@ export default function Dashboard() {
                 style={{ width: `${Math.min((totalSavings / 500000) * 100, 100)}%` }} 
               />
             </div>
+            <WealthAuditor totalSavings={totalSavings} />
           </div>
         </div>
 
-        {/* MIDDLE COLUMN: Physical Protocol */}
+        {/* MIDDLE COLUMN */}
         <div>
           <WorkoutLog />
         </div>
 
-        {/* RIGHT COLUMN: Quick Entry & 8K Vault */}
+        {/* RIGHT COLUMN */}
         <div className="space-y-8">
           <QuickEntry />
           <PhotoVault />
           <div className="p-8 rounded-[2.5rem] bg-zinc-900/50 border border-white/5">
             <h3 className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mb-6">Activity Stream</h3>
             <div className="space-y-4">
-              {recentLogs.map(log => (
+              {recentLogs.slice(0, 3).map(log => (
                 <div key={log.id} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
                   <span className="text-sm font-bold text-zinc-300">{log.description}</span>
                   <span className={`font-mono text-sm font-bold ${log.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
@@ -171,10 +167,13 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* 4. LOWER DECK: Nutrition Protocol */}
+      {/* 4. LOWER DECK */}
       <div className="mt-20 border-t border-white/5 pt-16">
         <MealSlider />
       </div>
+
+      {/* 5. LIVE COMMAND TICKER */}
+      <LiveTicker logs={recentLogs} />
 
     </main>
   );
