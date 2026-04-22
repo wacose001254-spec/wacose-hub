@@ -1,113 +1,95 @@
 "use client";
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { Utensils, Dumbbell, CheckCircle, Loader2 } from 'lucide-react';
+import { Plus, Dumbbell, Utensils, Check } from 'lucide-react';
 
 export default function QuickEntry() {
-  const [loadingMeal, setLoadingMeal] = useState(false);
-  const [loadingWork, setLoadingWork] = useState(false);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [exercise, setExercise] = useState("Pushups");
+  const [reps, setReps] = useState("");
+  const [customMeal, setCustomMeal] = useState("");
+  const [status, setStatus] = useState<'idle' | 'syncing' | 'success'>('idle');
 
-  // Your actual rotational menu options
-  const mealOptions = [
-    { label: "Foundation: 3 Eggs + Ngwaci + Sukuma", val: "Eggs/Ngwaci/Sukuma" },
-    { label: "Foundation: Omena + Managu + Nduma", val: "Omena/Managu/Nduma" },
-    { label: "Foundation: Ndengu + Brown Ugali + Avocado", val: "Ndengu/Ugali/Avocado" },
-    { label: "Foundation: Beef Liver + Spinach + Egg", val: "Liver/Spinach/Egg" },
-    { label: "Metabolism: Nduma + Minced Beef + Matoke", val: "Nduma/Beef/Matoke" },
-    { label: "Metabolism: Lentils (Kamande) + Avocado", val: "Kamande/Avocado" },
-    { label: "Metabolism: Gizzards + Cabbage + Egg", val: "Gizzards/Cabbage/Egg" },
-  ];
+  const handleWorkout = async () => {
+    if (!reps) return;
+    setStatus('syncing');
+    
+    const { error } = await supabase
+      .from('workouts')
+      .insert([{ 
+        exercise_name: exercise, 
+        reps: parseInt(reps),
+        created_at: new Date().toISOString() 
+      }]);
 
-  // Your 6-Exercise Bodyweight Protocol
-  const workoutTypes = [
-    "Standard Pushups",
-    "Diamond Pushups",
-    "Bodyweight Squats",
-    "Plank Holds (Seconds)",
-    "Mountain Climbers",
-    "Daily Walking (Steps)"
-  ];
-
-  const logMeal = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoadingMeal(true);
-    const formData = new FormData(e.currentTarget);
-    const { error } = await supabase.from('meals').insert([
-      { meal_name: formData.get('meal'), created_at: new Date().toISOString() }
-    ]);
     if (!error) {
-      setSuccess('meal');
-      setTimeout(() => setSuccess(null), 2000);
+      setReps("");
+      triggerSuccess();
     }
-    setLoadingMeal(false);
   };
 
-  const logWorkout = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoadingWork(true);
-    const formData = new FormData(e.currentTarget);
-    const { error } = await supabase.from('workouts').insert([
-      { 
-        exercise: formData.get('exercise'), 
-        reps: parseInt(formData.get('reps') as string),
+  const handleCustomMeal = async () => {
+    if (!customMeal) return;
+    setStatus('syncing');
+
+    const { error } = await supabase
+      .from('finances') // Custom meals logged as tracking entries in finances or a meals table
+      .insert([{ 
+        description: `MEAL: ${customMeal}`, 
+        amount: 0, 
+        type: 'expense',
         created_at: new Date().toISOString() 
-      }
-    ]);
+      }]);
+
     if (!error) {
-      setSuccess('work');
-      setTimeout(() => setSuccess(null), 2000);
+      setCustomMeal("");
+      triggerSuccess();
     }
-    setLoadingWork(false);
+  };
+
+  const triggerSuccess = () => {
+    setStatus('success');
+    setTimeout(() => setStatus('idle'), 2000);
   };
 
   return (
-    <div className="space-y-6">
-      {/* MEAL LOGGING */}
-      <div className="p-6 bg-zinc-900/50 rounded-3xl border border-white/5 backdrop-blur-sm">
-        <div className="flex items-center gap-2 mb-4 text-blue-400">
-          <Utensils size={16} />
-          <h3 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400">Log Fuel</h3>
-        </div>
-        <form onSubmit={logMeal} className="space-y-3">
-          <select name="meal" className="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-blue-500 outline-none appearance-none">
-            {mealOptions.map((m) => (
-              <option key={m.val} value={m.val}>{m.label}</option>
-            ))}
-          </select>
-          <button className={`w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-            success === 'meal' ? 'bg-green-600' : 'bg-zinc-800 hover:bg-zinc-700'
-          }`}>
-            {loadingMeal ? <Loader2 className="animate-spin" size={14} /> : success === 'meal' ? <CheckCircle size={14} /> : "Record Meal"}
+    <div className="p-8 rounded-[2.5rem] bg-zinc-900/50 border border-white/5 space-y-6">
+      <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-500 mb-4">Quick Entry</h3>
+      
+      {/* Workout Input */}
+      <div className="space-y-3">
+        <div className="flex gap-2">
+          <input 
+            type="number" 
+            value={reps} 
+            onChange={(e) => setReps(e.target.value)}
+            placeholder="Reps" 
+            className="w-24 bg-black border border-white/10 rounded-xl px-4 py-3 text-sm font-mono focus:border-blue-500 outline-none"
+          />
+          <button 
+            onClick={handleWorkout}
+            className="flex-1 bg-blue-600 hover:bg-blue-500 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95"
+          >
+            {status === 'success' ? <Check size={16} /> : <Dumbbell size={16} />}
+            <span className="text-[10px] font-black uppercase tracking-widest">Log Reps</span>
           </button>
-        </form>
+        </div>
       </div>
 
-      {/* WORKOUT LOGGING */}
-      <div className="p-6 bg-zinc-900/50 rounded-3xl border border-white/5 backdrop-blur-sm">
-        <div className="flex items-center gap-2 mb-4 text-green-400">
-          <Dumbbell size={16} />
-          <h3 className="font-bold text-[10px] uppercase tracking-widest text-zinc-400">Log Movement</h3>
-        </div>
-        <form onSubmit={logWorkout} className="space-y-3">
-          <select name="exercise" className="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-white focus:ring-2 focus:ring-green-500 outline-none">
-            {workoutTypes.map((w) => (
-              <option key={w} value={w}>{w}</option>
-            ))}
-          </select>
-          <input 
-            name="reps" 
-            type="number" 
-            placeholder="Reps / Seconds / Steps" 
-            className="w-full bg-black border border-white/10 rounded-xl p-3 text-sm text-white outline-none focus:ring-2 focus:ring-green-500" 
-            required 
-          />
-          <button className={`w-full py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ${
-            success === 'work' ? 'bg-green-600' : 'bg-zinc-800 hover:bg-zinc-700'
-          }`}>
-            {loadingWork ? <Loader2 className="animate-spin" size={14} /> : success === 'work' ? <CheckCircle size={14} /> : "Record Session"}
-          </button>
-        </form>
+      {/* Off-Menu Meal Input */}
+      <div className="pt-4 border-t border-white/5 space-y-3">
+        <input 
+          type="text" 
+          value={customMeal}
+          onChange={(e) => setCustomMeal(e.target.value)}
+          placeholder="Log Off-Menu Meal..." 
+          className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-orange-500 outline-none"
+        />
+        <button 
+          onClick={handleCustomMeal}
+          className="w-full py-3 border border-orange-500/20 hover:bg-orange-500/10 text-orange-500 rounded-xl flex items-center justify-center gap-2 transition-all text-[10px] font-black uppercase tracking-widest"
+        >
+          <Utensils size={14} /> Log Custom Meal
+        </button>
       </div>
     </div>
   );
