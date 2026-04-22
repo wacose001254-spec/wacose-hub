@@ -12,6 +12,7 @@ import MealSlider from '@/components/MealSlider';
 import QuickEntry from '@/components/QuickEntry'; 
 import WealthAuditor from '@/components/WealthAuditor';
 import PhotoVault from '@/components/PhotoVault';
+import MealTracker from '@/components/MealTracker';
 import LiveTicker from '@/components/LiveTicker'; // The New Live Stream Bar
 
 // Icons
@@ -145,6 +146,9 @@ export default function Dashboard() {
         {/* MIDDLE COLUMN */}
         <div>
           <WorkoutLog />
+          <div className="mt-8">
+     <MealTracker /> {/* 👈 Add the new component here */}
+  </div>
         </div>
 
         {/* RIGHT COLUMN */}
